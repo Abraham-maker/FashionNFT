@@ -15,6 +15,8 @@ import AuthContext from '../../../contexts/authContext';
 import USERS, { getUserDataWithUsername } from '../../../common/data/userDummyData';
 import Spinner from '../../../components/bootstrap/Spinner';
 import Alert from '../../../components/bootstrap/Alert';
+import Checks from '../../../components/bootstrap/forms/Checks';
+import Label from '../../../components/bootstrap/forms/Label';
 
 interface ILoginHeaderProps {
 	isNewUser?: boolean;
@@ -23,15 +25,15 @@ const LoginHeader: FC<ILoginHeaderProps> = ({ isNewUser }) => {
 	if (isNewUser) {
 		return (
 			<>
-				<div className='text-center h1 fw-bold mt-5'>Create Account,</div>
-				<div className='text-center h4 text-muted mb-5'>Sign up to get started!</div>
+				<div className='text-center h1 fw-bold mt-5'>Crear una cuenta,</div>
+				<div className='text-center h4 text-muted mb-5'>¡Regístrese para empezar!</div>
 			</>
 		);
 	}
 	return (
 		<>
-			<div className='text-center h1 fw-bold mt-5'>Welcome,</div>
-			<div className='text-center h4 text-muted mb-5'>Sign in to continue!</div>
+			<div className='text-center h1 fw-bold mt-5'>Bienvenido,</div>
+			<div className='text-center h4 text-muted mb-5'>Inicie sesión para continuar!</div>
 		</>
 	);
 };
@@ -44,71 +46,106 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 
 	const { darkModeStatus } = useDarkMode();
 
+	const [errores, setErrores]: any = useState({})
 	const [signInPassword, setSignInPassword] = useState<boolean>(false);
 	const [singUpStatus, setSingUpStatus] = useState<boolean>(!!isSignUp);
+	const [setDatesUser, setSetDatesUser]: any = useState({})
+	const [erroresCreate, setErroresCreate]: any = useState({})
+	const [checked, setChecked] = useState(false);
+	const { errors, message } = errores ?? false
+	const { email, password } = errors ?? false;
 
 	const navigate = useNavigate();
 	const handleOnClick = useCallback(() => navigate('/'), [navigate]);
 
-	const usernameCheck = (username: string) => {
-		return !!getUserDataWithUsername(username);
-	};
-
-	const passwordCheck = (username: string, password: string) => {
-		return getUserDataWithUsername(username).password === password;
-	};
+	const handleInput = ({ target }: any) => {
+		const { name, value } = target;
+		setSetDatesUser({ ...setDatesUser, [name]: value });
+	}
 
 	const formik = useFormik({
 		enableReinitialize: true,
 		initialValues: {
-			loginUsername: USERS.JOHN.username,
-			loginPassword: USERS.JOHN.password,
+			loginUsername: '',
+			loginPassword: '',
 		},
 		validate: (values) => {
-			const errors: { loginUsername?: string; loginPassword?: string } = {};
+			const errores: { loginUsername?: string; loginPassword?: string } = {};
 
 			if (!values.loginUsername) {
-				errors.loginUsername = 'Required';
+				errores.loginUsername = 'Required';
 			}
 
 			if (!values.loginPassword) {
-				errors.loginPassword = 'Required';
+				errores.loginPassword = 'Required';
 			}
 
-			return errors;
+			return errores;
 		},
 		validateOnChange: false,
 		onSubmit: (values) => {
-			if (usernameCheck(values.loginUsername)) {
-				if (passwordCheck(values.loginUsername, values.loginPassword)) {
+			const Login = async () => {
+
+				const body = {
+					email: values.loginUsername,
+					password: values.loginPassword
+				}
+
+				setIsLoading(true)
+				await fetch("https://www.fashionft.gotopdev.com/api/v1/login", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"Accept": "application/json",
+					},
+					body: JSON.stringify(body),
+				}).then(response => response.json()).then((data) => {
+					setIsLoading(false)
+					setErrores(data)
 					if (setUser) {
 						setUser(values.loginUsername);
+						if (data.status === 'Success') {
+							handleOnClick();
+						}
 					}
-
-					handleOnClick();
-				} else {
-					formik.setFieldError('loginPassword', 'Username and password do not match.');
-				}
+				})
 			}
+			Login();
 		},
 	});
 
+	const createUser = async () => {
+		setIsLoading(true)
+		const body = {
+			name: setDatesUser.name,
+			email: setDatesUser.email,
+			password: setDatesUser.password,
+			password_confirmation: setDatesUser.password_confirmation,
+			terms: checked
+		}
+
+		await fetch("https://www.fashionft.gotopdev.com/api/v1/register", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"Accept": "application/json",
+			},
+			body: JSON.stringify(body),
+		}).then(response => response.json())
+			.then((data) => {
+				setIsLoading(false)
+				setErroresCreate(data)
+				if (data.status === 'Success') {
+					setSingUpStatus(!singUpStatus)
+				}
+				setTimeout(() => {
+					setSetDatesUser({})
+					setChecked(!checked)
+				}, 1000);
+			})
+	}
+
 	const [isLoading, setIsLoading] = useState<boolean>(false);
-	const handleContinue = () => {
-		setIsLoading(true);
-		setTimeout(() => {
-			if (
-				!Object.keys(USERS).find(
-					(f) => USERS[f].username.toString() === formik.values.loginUsername,
-				)
-			) {
-				formik.setFieldError('loginUsername', 'No such user found in the system.');
-			} else {
-				setSignInPassword(true);
-			}
-			setIsLoading(false);
-		}, 1000);
-	};
 
 	return (
 		<PageWrapper
@@ -130,7 +167,6 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 												'text-light': darkModeStatus,
 											},
 										)}>
-										<Logo width={200} />
 									</Link>
 								</div>
 								<div
@@ -149,7 +185,7 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 													setSignInPassword(false);
 													setSingUpStatus(!singUpStatus);
 												}}>
-												Login
+												Iniciar sesión
 											</Button>
 										</div>
 										<div className='col'>
@@ -162,24 +198,22 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 													setSignInPassword(false);
 													setSingUpStatus(!singUpStatus);
 												}}>
-												Sign Up
+												Crear cuenta
 											</Button>
 										</div>
 									</div>
 								</div>
 
 								<LoginHeader isNewUser={singUpStatus} />
-
-								<Alert isLight icon='Lock' isDismissible>
-									<div className='row'>
-										<div className='col-12'>
-											<strong>Username:</strong> {USERS.JOHN.username}
-										</div>
-										<div className='col-12'>
-											<strong>Password:</strong> {USERS.JOHN.password}
-										</div>
-									</div>
-								</Alert>
+								{erroresCreate.status === 'Success' ?
+									(
+										<p style={{
+											color: "#46bcaa",
+											fontSize: "1rem",
+										}}>
+											Creacion de cuenta exitosa
+										</p>
+									) : false}
 								<form className='row g-4'>
 									{singUpStatus ? (
 										<>
@@ -187,43 +221,123 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 												<FormGroup
 													id='signup-email'
 													isFloating
-													label='Your email'>
-													<Input type='email' autoComplete='email' />
+													label='Nombre y Apellido'>
+													<Input onFocus={() => {
+														setErroresCreate({});
+													}} value={setDatesUser.name} type='email' name='name' autoComplete='name' onChange={handleInput} />
 												</FormGroup>
+												{erroresCreate?.errors?.name ?
+													(
+														<p style={{
+															color: "#f35421",
+															fontSize: "0.8rem",
+															marginTop: "0.5rem"
+														}}>
+															{erroresCreate?.errors?.name}
+														</p>
+													) : false}
 											</div>
 											<div className='col-12'>
 												<FormGroup
 													id='signup-name'
 													isFloating
-													label='Your name'>
-													<Input autoComplete='given-name' />
+													label='Email'>
+													<Input onFocus={() => {
+														setErroresCreate({});
+													}} value={setDatesUser.email} autoComplete='given-name' name='email' onChange={handleInput} />
 												</FormGroup>
+												{erroresCreate?.errors?.email ?
+													(
+														<p style={{
+															color: "#f35421",
+															fontSize: "0.8rem",
+															marginTop: "0.5rem"
+														}}>
+															{erroresCreate?.errors?.email}
+														</p>
+													) : false}
 											</div>
 											<div className='col-12'>
 												<FormGroup
 													id='signup-surname'
 													isFloating
-													label='Your surname'>
-													<Input autoComplete='family-name' />
+													label='Contraseña'>
+													<Input onFocus={() => {
+														setErroresCreate({});
+													}} name="password" type='password' value={setDatesUser.password} autoComplete='family-name' onChange={handleInput} />
 												</FormGroup>
+												{erroresCreate?.errors?.password ?
+													(
+														<p style={{
+															color: "#f35421",
+															fontSize: "0.8rem",
+															marginTop: "0.5rem"
+														}}>
+															{erroresCreate?.errors?.password}
+														</p>
+													) : false}
 											</div>
 											<div className='col-12'>
 												<FormGroup
 													id='signup-password'
 													isFloating
-													label='Password'>
+													label='Confirmar contraseña'>
 													<Input
+														name="password_confirmation"
 														type='password'
+														value={setDatesUser.password_confirmation}
 														autoComplete='password'
+														onChange={handleInput}
+														onFocus={() => {
+															setErroresCreate({});
+														}}
 													/>
 												</FormGroup>
+												{erroresCreate?.errors?.password_confirmation ?
+													(
+														<p style={{
+															color: "#f35421",
+															fontSize: "0.8rem",
+															marginTop: "0.5rem"
+														}}>
+															{erroresCreate?.errors?.password_confirmation}
+														</p>
+													) : false}
 											</div>
+
+											<FormGroup className='col-lg-12'>
+												<Label>
+													{erroresCreate?.errors?.terms ?
+														(
+															<p style={{
+																color: "#f35421",
+																fontSize: "0.8rem",
+																marginTop: "0.5rem"
+															}}>
+																{erroresCreate?.errors?.terms}
+															</p>
+														) : false}
+												</Label>
+												<Checks
+													type='checkbox'
+													id='exampleLabelTwo'
+													label='Acepto los términos y condiciones de servicio y política de privacidad'
+													name="terms"
+													onChange={() => { setChecked(!checked) }}
+													checked={checked}
+												/>
+											</FormGroup>
+
 											<div className='col-12'>
 												<Button
 													color='info'
 													className='w-100 py-3'
-													onClick={handleOnClick}>
-													Sign Up
+													onClick={createUser}
+												>
+													{isLoading && (
+														<Spinner isSmall inButton isGrow />
+													)}
+													Crear cuenta
 												</Button>
 											</div>
 										</>
@@ -233,7 +347,7 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 												<FormGroup
 													id='loginUsername'
 													isFloating
-													label='Your email or username'
+													label='Email o usuario'
 													className={classNames({
 														'd-none': signInPassword,
 													})}>
@@ -249,21 +363,27 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 														onBlur={formik.handleBlur}
 														onFocus={() => {
 															formik.setErrors({});
+															setErrores({});
+															setErroresCreate({})
 														}}
 													/>
+
 												</FormGroup>
-												{signInPassword && (
-													<div className='text-center h4 mb-3 fw-bold'>
-														Hi, {formik.values.loginUsername}.
-													</div>
-												)}
+												{email ? <p style={{
+													color: "#f35421",
+													fontSize: "0.8rem",
+													marginTop: "0.5rem"
+												}}>{email}</p> : message === 'El email no existe' ? <p style={{
+													color: "#f35421",
+													fontSize: "0.8rem",
+													marginTop: "0.5rem"
+												}}>{message}</p> : false}
+
 												<FormGroup
 													id='loginPassword'
 													isFloating
-													label='Password'
-													className={classNames({
-														'd-none': !signInPassword,
-													})}>
+													className='mt-4'
+													label='Contraseña'>
 													<Input
 														type='password'
 														autoComplete='current-password'
@@ -272,97 +392,48 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 														invalidFeedback={
 															formik.errors.loginPassword
 														}
-														validFeedback='Looks good!'
 														isValid={formik.isValid}
 														onChange={formik.handleChange}
 														onBlur={formik.handleBlur}
+														onFocus={() => {
+															formik.setErrors({});
+															setErrores({});
+															setErroresCreate({})
+														}}
 													/>
 												</FormGroup>
+												{password ?
+													(<>
+														<p style={{
+															color: "#f35421",
+															fontSize: "0.8rem",
+															marginTop: "0.5rem"
+														}}>{password}</p>
+													</>
+													) : false}
 											</div>
 											<div className='col-12'>
-												{!signInPassword ? (
-													<Button
-														color='warning'
-														className='w-100 py-3'
-														isDisable={!formik.values.loginUsername}
-														onClick={handleContinue}>
-														{isLoading && (
-															<Spinner isSmall inButton isGrow />
-														)}
-														Continue
-													</Button>
-												) : (
-													<Button
-														color='warning'
-														className='w-100 py-3'
-														onClick={formik.handleSubmit}>
-														Login
-													</Button>
-												)}
-											</div>
-										</>
-									)}
+												<Button
+													color='warning'
+													className='w-100 py-3'
+													isDisable={!formik.values.loginUsername}
+													onClick={formik.handleSubmit}>
+													{isLoading && (
+														<Spinner isSmall inButton isGrow />
+													)}
+													Iniciar sesión
+												</Button>
 
-									{/* BEGIN :: Social Login */}
-									{!signInPassword && (
-										<>
-											<div className='col-12 mt-3 text-center text-muted'>
-												OR
-											</div>
-											<div className='col-12 mt-3'>
-												<Button
-													isOutline
-													color={darkModeStatus ? 'light' : 'dark'}
-													className={classNames('w-100 py-3', {
-														'border-light': !darkModeStatus,
-														'border-dark': darkModeStatus,
-													})}
-													icon='CustomApple'
-													onClick={handleOnClick}>
-													Sign in with Apple
-												</Button>
-											</div>
-											<div className='col-12'>
-												<Button
-													isOutline
-													color={darkModeStatus ? 'light' : 'dark'}
-													className={classNames('w-100 py-3', {
-														'border-light': !darkModeStatus,
-														'border-dark': darkModeStatus,
-													})}
-													icon='CustomGoogle'
-													onClick={handleOnClick}>
-													Continue with Google
-												</Button>
 											</div>
 										</>
 									)}
-									{/* END :: Social Login */}
 								</form>
 							</CardBody>
 						</Card>
-						<div className='text-center'>
-							<a
-								href='/'
-								className={classNames('text-decoration-none me-3', {
-									'link-light': singUpStatus,
-									'link-dark': !singUpStatus,
-								})}>
-								Privacy policy
-							</a>
-							<a
-								href='/'
-								className={classNames('link-light text-decoration-none', {
-									'link-light': singUpStatus,
-									'link-dark': !singUpStatus,
-								})}>
-								Terms of use
-							</a>
-						</div>
 					</div>
 				</div>
 			</Page>
-		</PageWrapper>
+		</PageWrapper >
 	);
 };
 Login.propTypes = {
