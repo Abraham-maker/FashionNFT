@@ -22,9 +22,9 @@ const DefaultAside = () => {
 
 	return (
 		<Aside>
-			{/* <AsideHead> */}
-			{/* <Brand asideStatus={asideStatus} setAsideStatus={setAsideStatus} /> */}
-			{/* </AsideHead> */}
+			<AsideHead>
+				<Brand asideStatus={asideStatus} setAsideStatus={setAsideStatus} />
+			</AsideHead>
 			<AsideBody>
 				<Navigation menu={completeMenu} id='aside-dashboard' />
 				<NavigationLine />
@@ -69,43 +69,9 @@ const DefaultAside = () => {
 					</Card>
 				)}
 			</AsideBody>
-			{/* <AsideFoot>
-				<nav aria-label='aside-bottom-menu'>
-					<div className='navigation'>
-						<div
-							role='presentation'
-							className='navigation-item cursor-pointer'
-							onClick={() => {
-								setDoc(!doc);
-							}}
-							data-tour='documentation'>
-							<span className='navigation-link navigation-link-pill'>
-								<span className='navigation-link-info'>
-									<Icon
-										icon={doc ? 'ToggleOn' : 'ToggleOff'}
-										color={doc ? 'success' : undefined}
-										className='navigation-icon'
-									/>
-									<span className='navigation-text'>
-										{t('menu:Documentation')}
-									</span>
-								</span>
-								<span className='navigation-link-extra'>
-									<Icon
-										icon='Circle'
-										className={classNames(
-											'navigation-notification',
-											'text-success',
-											'animate__animated animate__heartBeat animate__infinite animate__slower',
-										)}
-									/>
-								</span>
-							</span>
-						</div>
-					</div>
-				</nav> */}
-				{/* <User /> */}
-			{/* </AsideFoot> */}
+			<AsideFoot>
+				<User />
+			</AsideFoot>
 		</Aside>
 	);
 };
