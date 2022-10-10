@@ -1,5 +1,5 @@
 import React, { lazy } from 'react';
-import { componentsMenu, dashboardMenu, demoPages, layoutMenu } from '../menu';
+import { componentsMenu, dashboardMenu, demoPages, layoutMenu, completeMenu } from '../menu';
 import Login from '../pages/presentation/auth/Login';
 
 const LANDING = {
@@ -7,6 +7,12 @@ const LANDING = {
 	DASHBOARD_BOOKING: lazy(() => import('../pages/dashboard/DashboardBookingPage')),
 	SUMMARY: lazy(() => import('../pages/SummaryPage')),
 };
+const VIEWS = {
+	DASHBOARD: lazy(() => import('../Views/dashboard/dashboard')),
+	COLLECTIONS: lazy(() => import('../Views/collections/Collections')),
+	CREATENFT: lazy(() => import('../Views/createNFT/CreateNFT')),
+	PUBLICATION: lazy(() => import('../Views/publication/Publication')),
+}
 const SINGLE = {
 	BOXED: lazy(() => import('../pages/presentation/single-pages/SingleBoxedPage')),
 	FLUID: lazy(() => import('../pages/presentation/single-pages/SingleFluidPage')),
@@ -189,6 +195,34 @@ const presentation = [
 	{
 		path: dashboardMenu.summary.path,
 		element: <LANDING.SUMMARY />,
+		exact: true,
+	},
+
+	/**
+	 * Views Original
+	 */
+
+	{
+		path: completeMenu.dashboard_fashion.path,
+		element: <VIEWS.DASHBOARD />,
+		exact: true,
+	},
+
+	{
+		path: completeMenu.colection.path,
+		element: <VIEWS.COLLECTIONS />,
+		exact: true,
+	},
+
+	{
+		path: completeMenu.publicacion.path,
+		element: <VIEWS.PUBLICATION />,
+		exact: true,
+	},
+
+	{
+		path: completeMenu.fabricacion.path,
+		element: <VIEWS.CREATENFT />,
 		exact: true,
 	},
 

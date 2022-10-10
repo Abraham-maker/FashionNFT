@@ -30,6 +30,36 @@ export const homeMenu = {
 	},
 };
 
+export const completeMenu = {
+	dashboard_fashion: {
+		id: 'dashboard_fashion',
+		text: 'Dashboard',
+		path: '/dashboard_fashion',
+		icon: 'Dashboard',
+		subMenu: null,
+	},
+	colection: {
+		id: 'colection',
+		text: 'Colecciones',
+		path: 'collections',
+		icon: 'emoji_transportation',
+		subMenu: null,
+	},
+	fabricacion: {
+		id: 'fabricacion',
+		text: 'Fabricacion NFT',
+		path: 'CreateNFT',
+		icon: 'RecentActors',
+	},
+	publicacion: {
+		id: 'publicacion',
+		text: 'Publicacion',
+		path: 'publication',
+		icon: 'sticky_note_2',
+		subMenu: null,
+	},
+}
+
 export const dashboardMenu = {
 	dashboard: {
 		id: 'dashboard',
